@@ -38,7 +38,6 @@ RUN \
   a2disconf other-vhosts-access-log && \
   a2enconf vhosts-logging && \
   apt-get -y autoremove build-essential apache2-dev git && \
-  cd /opt/configurability/src/configurability_apache2_process/ && \
   rm -rf /tmp/mod_rpaf && \
   rm -rf /var/lib/apt/lists/*
 
