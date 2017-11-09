@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -s /etc/DOCUMENT_ROOT ]; then
+    DOCUMENT_ROOT=`cat /etc/DOCUMENT_ROOT`
+else
+    echo ${DOCUMENT_ROOT} > /etc/DOCUMENT_ROOT
+fi
+
+if [ ! -d  "/var/www/$DOCUMENT_ROOT" ]; then
+  echo "Creating folder /var/www/$DOCUMENT_ROOT"
+  mkdir -p "/var/www/$DOCUMENT_ROOT"
+else 
+  echo "/var/www/$DOCUMENT_ROOT already exists."
+fi

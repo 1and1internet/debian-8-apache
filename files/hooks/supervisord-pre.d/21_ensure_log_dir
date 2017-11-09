@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# This var is defined elsewhere but cant find it atm
+# set ${APACHE_LOG_DIR} $LOG_DIR
+
+LOG_DIR="/var/log/apache2"
+
+if [ ! -d "$LOG_DIR" ]; then
+  echo "Creating log directory"
+  mkdir -p $LOG_DIR
+else
+  echo "Log directory exists"
+fi
