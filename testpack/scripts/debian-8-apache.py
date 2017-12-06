@@ -4,36 +4,30 @@ import unittest
 import os
 import docker
 from selenium import webdriver
+import sys
+import os.path
 
 
 class Test1and1ApacheImage(unittest.TestCase):
     client = None
     container = None
 
+    def get_share_mountpoint():
+        share = os.getenv("SOURCE_MOUNT")
+        print("SOURCE_MOUNT is [%s]" % share)
+        if share is None or share == "":
+            share = os.path.dirname(sys.argv[0])
+            print("SOURCE_MOUNT is not defined, using %s" % share)
+        return share
+
     @classmethod
     def setUpClass(cls):
-        print('''
-        TODO:
-            Is the SOURCE_MOUNT going to work in drone? We are effectively passing
-            a mount point from the host, via this container, to the container that
-            that we create here for test. However, in drone we are run from within
-            a container already. We may need to just docker cp the files into the
-            container being tested.
-
-            Is the network="host" setting going to work in drone? We need to be able
-            to reach the 8080 port in our new container that we spawn and using the
-            bridge network doesn't do it. The bridge network is fine for external
-            network access but not internal container network access.
-
-            The rpaf.sh test fails. Not sure why or how it's supposed to work.
-        ''')
         image_to_test = os.getenv("IMAGE_NAME")
         if image_to_test == "":
             raise Exception("I don't know what image to test")
         Test1and1ApacheImage.client = docker.from_env()
 
-        share = os.getenv("SOURCE_MOUNT")
-        share_bind = "%s/testpack/files/html" % share
+        share_bind = "%s/testpack/files/html" % Test1and1ApacheImage.get_share_mountpoint()
 
         Test1and1ApacheImage.container = Test1and1ApacheImage.client.containers.run(
             image=image_to_test,
