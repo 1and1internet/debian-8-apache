@@ -31,3 +31,4 @@ Please see the top of the Makefile for various variables which you may choose to
 ## Modifying the tests
 
 Tests are run via the 1and1internet/testpack-framework image. This will run tests in under the testpack folder. See information on that image regarding tests.
+.
