@@ -14,7 +14,6 @@ class Test1and1ApacheImage(unittest.TestCase):
 
     def get_share_mountpoint():
         share = os.getenv("SOURCE_MOUNT")
-        print("SOURCE_MOUNT is [%s]" % share)
         if share is None or share == "":
             share = os.path.dirname(sys.argv[0])
             print("SOURCE_MOUNT is not defined, using %s" % share)
@@ -28,6 +27,7 @@ class Test1and1ApacheImage(unittest.TestCase):
         Test1and1ApacheImage.client = docker.from_env()
 
         share_bind = "%s/testpack/files/html" % Test1and1ApacheImage.get_share_mountpoint()
+        docker_network = os.getenv("DOCKER_NETWORK", "host")
 
         Test1and1ApacheImage.container = Test1and1ApacheImage.client.containers.run(
             image=image_to_test,
@@ -39,7 +39,7 @@ class Test1and1ApacheImage(unittest.TestCase):
                     'mode': 'ro'
                 }
             },
-            network="host"
+            network=docker_network
         )
 
     @classmethod
