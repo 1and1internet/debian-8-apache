@@ -137,6 +137,7 @@ class Test1and1ApacheImage(unittest.TestCase):
             )
 
     def test_apache2_get(self):
+        print(self.execRun("find /var/www"))
         driver = webdriver.PhantomJS()
         driver.get("http://localhost:8080/test.html")
         self.assertEqual('Success', driver.title)

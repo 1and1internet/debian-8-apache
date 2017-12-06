@@ -1,6 +1,10 @@
 ---
 pipeline:
 
+  networks:
+    default:
+      driver: host
+
   pull_tools:
     when:
       event: push
@@ -34,7 +38,6 @@ pipeline:
     when:
       event: push
     image: 1and1internet/testpack-framework
-    net: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
