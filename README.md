@@ -1,10 +1,10 @@
-# Apache on Ubuntu 16.04 LTS (Xenial Xerus)
+# Apache on Debian 8 'jessie'
 
 This image provides a common apache based hosting environment. The intent is for the web content itself to be stored in persistent storage wihch is then mounted in to this image at `/var/www`
 
 ## Updates
 
-Please consult [the official Ubuntu site](https://www.ubuntu.com/info/release-end-of-life) for information on when this version of Ubuntu becomes end of life.
+Please consult https://www.debian.org/releases/ for information on when this version of Debian becomes end of life.
 
 ## Usage
 
@@ -16,7 +16,7 @@ UID=999
 PORT=80
 WEB_ROOT="/var/www/"
 
-docker run -u ${UID}:0 -p ${PORT}:8080 -v ${WEB_ROOT}:/var/www/ 1and1internet/ubuntu-16-apache
+docker run -u ${UID}:0 -p ${PORT}:8080 -v ${WEB_ROOT}:/var/www/ 1and1internet/debian-8-apache
 ```
 
 ## Building and testing
@@ -30,8 +30,4 @@ Please see the top of the Makefile for various variables which you may choose to
 
 ## Modifying the tests
 
-The tests depend on shared testing code found in its own git repository called [drone-tests](https://github.com/1and1internet/drone-tests).
-
-To use a different tests repository set the TESTS_REPO variable to the git URL for the alternative repository. e.g. `make TESTS_REPO=https://github.com/1and1internet/drone-tests.git`
-
-To use a locally modified copy of the tests repository set the TESTS_LOCAL variable to the absolute path of where it is located. This variable will override the TESTS_REPO variable. e.g. `make TESTS_LOCAL=/tmp/github/1and1internet/drone-tests/`
+Tests are run via the 1and1internet/testpack-framework image. This will run tests in under the testpack folder. See information on that image regarding tests.
