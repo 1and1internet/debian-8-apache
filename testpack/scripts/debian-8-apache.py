@@ -4,43 +4,47 @@ import unittest
 import os
 import docker
 from selenium import webdriver
-import sys
 import os.path
+import tarfile
+from io import BytesIO
 
 
 class Test1and1ApacheImage(unittest.TestCase):
-    client = None
     container = None
-
-    def get_share_mountpoint():
-        share = os.getenv("SOURCE_MOUNT")
-        if share is None or share == "":
-            share = os.path.dirname(sys.argv[0])
-            print("SOURCE_MOUNT is not defined, using %s" % share)
-        return share
 
     @classmethod
     def setUpClass(cls):
+        docker_network = os.getenv("DOCKER_NETWORK", "host")
         image_to_test = os.getenv("IMAGE_NAME")
         if image_to_test == "":
             raise Exception("I don't know what image to test")
-        Test1and1ApacheImage.client = docker.from_env()
 
-        share_bind = "%s/testpack/files/html" % Test1and1ApacheImage.get_share_mountpoint()
-        docker_network = os.getenv("DOCKER_NETWORK", "host")
-
-        Test1and1ApacheImage.container = Test1and1ApacheImage.client.containers.run(
+        client = docker.from_env()
+        Test1and1ApacheImage.container = client.containers.run(
             image=image_to_test,
             remove=True,
             detach=True,
-            volumes={
-                share_bind: {
-                    'bind': '/var/www/html',
-                    'mode': 'ro'
-                }
-            },
             network=docker_network
         )
+        Test1and1ApacheImage.copy_test_files("testpack/files", "html", "/var/www")
+
+    @classmethod
+    def copy_test_files(cls, startfolder, relative_source, dest):
+        # Change to the start folder
+        pwd = os.getcwd()
+        os.chdir(startfolder)
+        # Tar up the request folder
+        pw_tarstream = BytesIO()
+        with tarfile.open(fileobj=pw_tarstream, mode='w:gz') as tf:
+            tf.add(relative_source)
+        # Copy the archive to the correct destination
+        docker.APIClient().put_archive(
+            container=Test1and1ApacheImage.container.id,
+            path=dest,
+            data=pw_tarstream.getvalue()
+        )
+        # Change back to original folder
+        os.chdir(pwd)
 
     @classmethod
     def tearDownClass(cls):
@@ -137,7 +141,6 @@ class Test1and1ApacheImage(unittest.TestCase):
             )
 
     def test_apache2_get(self):
-        print(self.execRun("find /var/www"))
         driver = webdriver.PhantomJS()
         driver.get("http://localhost:8080/test.html")
         self.assertEqual('Success', driver.title)
