@@ -15,6 +15,7 @@ class Test1and1ApacheImage(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         docker_network = os.getenv("DOCKER_NETWORK", "host")
+        print("DOCKER_NETWORK: ", docker_network)
         image_to_test = os.getenv("IMAGE_NAME")
         if image_to_test == "":
             raise Exception("I don't know what image to test")
