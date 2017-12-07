@@ -32,6 +32,8 @@ class Test1and1ApacheImage(unittest.TestCase):
     def copy_test_files(cls, startfolder, relative_source, dest):
         # Change to the start folder
         pwd = os.getcwd()
+        print("PWD: ", pwd)
+        print("DIRLIST: ", str(os.listdir()))
         os.chdir(startfolder)
         # Tar up the request folder
         pw_tarstream = BytesIO()
@@ -141,6 +143,7 @@ class Test1and1ApacheImage(unittest.TestCase):
             )
 
     def test_apache2_get(self):
+        print(self.execRun("find /var/www -exec ls -l {} \\;"))
         driver = webdriver.PhantomJS()
         driver.get("http://localhost:8080/test.html")
         self.assertEqual('Success', driver.title)
