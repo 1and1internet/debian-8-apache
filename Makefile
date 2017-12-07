@@ -4,7 +4,6 @@ BASE_IMAGE = $(shell grep Dockerfile -e FROM | cut -d ' ' -f 2)
 DOCKER_SOCKET = /var/run/docker.sock
 BUILD_ARGS = --rm
 TPACK_IMAGE = 1and1internet/testpack-framework
-DOCKER_NETWORK = host
 
 all: pull build test
 
@@ -23,7 +22,7 @@ build:
 	docker build ${BUILD_ARGS} --tag ${IMAGE_NAME} .
 
 test:
-	docker run --rm -i -v ${DOCKER_SOCKET}:/var/run/docker.sock -v ${PWD}/:/mnt/ -e IMAGE_NAME=${IMAGE_NAME} -e DOCKER_NETWORK=${DOCKER_NETWORK} --network=${DOCKER_NETWORK} -e SOURCE_MOUNT=${PWD} ${TPACK_IMAGE}
+	docker run --rm -i -v ${DOCKER_SOCKET}:/var/run/docker.sock -v ${PWD}/:/mnt/ -e IMAGE_NAME=${IMAGE_NAME} ${TPACK_IMAGE}
 
 clean:
 	##

@@ -11,11 +11,10 @@ from io import BytesIO
 
 class Test1and1ApacheImage(unittest.TestCase):
     container = None
+    container_ip = None
 
     @classmethod
     def setUpClass(cls):
-        docker_network = os.getenv("DOCKER_NETWORK", "host")
-        print("DOCKER_NETWORK: ", docker_network)
         image_to_test = os.getenv("IMAGE_NAME")
         if image_to_test == "":
             raise Exception("I don't know what image to test")
@@ -25,16 +24,17 @@ class Test1and1ApacheImage(unittest.TestCase):
             image=image_to_test,
             remove=True,
             detach=True,
-            network=docker_network
+            network_mode="bridge"
         )
         Test1and1ApacheImage.copy_test_files("testpack/files", "html", "/var/www")
+
+        details = docker.APIClient().inspect_container(container=Test1and1ApacheImage.container.id)
+        Test1and1ApacheImage.container_ip = details['NetworkSettings']['IPAddress']
 
     @classmethod
     def copy_test_files(cls, startfolder, relative_source, dest):
         # Change to the start folder
         pwd = os.getcwd()
-        print("PWD: ", pwd)
-        print("DIRLIST: ", str(os.listdir()))
         os.chdir(startfolder)
         # Tar up the request folder
         pw_tarstream = BytesIO()
@@ -144,9 +144,8 @@ class Test1and1ApacheImage(unittest.TestCase):
             )
 
     def test_apache2_get(self):
-        print(self.execRun("find /var/www -exec ls -l {} \\;"))
         driver = webdriver.PhantomJS()
-        driver.get("http://localhost:8080/test.html")
+        driver.get("http://%s:8080/test.html" % Test1and1ApacheImage.container_ip)
         self.assertEqual('Success', driver.title)
         #self.screenshot("open")
 
@@ -155,7 +154,7 @@ class Test1and1ApacheImage(unittest.TestCase):
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-For'] = "1.2.3.4"
         webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-Port'] = "99"
         driver = webdriver.PhantomJS()
-        driver.get("http://127.0.0.1:8080/cgi-bin/rpaf.sh")
+        driver.get("http://%s:8080/cgi-bin/rpaf.sh" % Test1and1ApacheImage.container_ip)
         self.assertTrue(driver.page_source.find("1.2.3.4") > -1, msg="Missing X-Forwarded-For")
         self.assertTrue(driver.page_source.find("99") > -1, msg="Missing X-Forwarded-Port")
         self.assertEqual(
