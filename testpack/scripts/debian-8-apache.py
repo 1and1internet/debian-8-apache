@@ -59,8 +59,11 @@ class Test1and1ApacheImage(unittest.TestCase):
 
     def execRun(self, command):
         result = self.container.exec_run(command)
-        exit_code = result[0]
-        output = result[1].decode('utf-8')
+        if isinstance(result, tuple):
+            exit_code = result[0]
+            output = result[1].decode('utf-8')
+        else:
+            output = result.decode('utf-8')
         return output
 
     def assertPackageIsInstalled(self, packageName):
