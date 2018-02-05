@@ -5,8 +5,6 @@ import os
 import docker
 from selenium import webdriver
 import os.path
-import tarfile
-from io import BytesIO
 from testpack_helper_library.unittests.dockertests import Test1and1Common
 
 
@@ -16,27 +14,9 @@ class Test1and1ApacheImage(Test1and1Common):
     @classmethod
     def setUpClass(cls):
         Test1and1Common.setUpClass()
-        Test1and1ApacheImage.copy_test_files("testpack/files", "html", "/var/www")
+        Test1and1Common.copy_test_files("testpack/files", "html", "/var/www")
         details = docker.APIClient().inspect_container(container=Test1and1Common.container.id)
         Test1and1ApacheImage.container_ip = details['NetworkSettings']['IPAddress']
-
-    @classmethod
-    def copy_test_files(cls, startfolder, relative_source, dest):
-        # Change to the start folder
-        pwd = os.getcwd()
-        os.chdir(startfolder)
-        # Tar up the request folder
-        pw_tarstream = BytesIO()
-        with tarfile.open(fileobj=pw_tarstream, mode='w:gz') as tf:
-            tf.add(relative_source)
-        # Copy the archive to the correct destination
-        docker.APIClient().put_archive(
-            container=Test1and1Common.container.id,
-            path=dest,
-            data=pw_tarstream.getvalue()
-        )
-        # Change back to original folder
-        os.chdir(pwd)
 
     # <tests to run>
 
