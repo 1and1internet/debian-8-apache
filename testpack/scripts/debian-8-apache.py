@@ -7,28 +7,17 @@ from selenium import webdriver
 import os.path
 import tarfile
 from io import BytesIO
+from testpack_helper_library.unittests.dockertests import Test1and1Common
 
 
-class Test1and1ApacheImage(unittest.TestCase):
-    container = None
+class Test1and1ApacheImage(Test1and1Common):
     container_ip = None
 
     @classmethod
     def setUpClass(cls):
-        image_to_test = os.getenv("IMAGE_NAME")
-        if image_to_test == "":
-            raise Exception("I don't know what image to test")
-
-        client = docker.from_env()
-        Test1and1ApacheImage.container = client.containers.run(
-            image=image_to_test,
-            remove=True,
-            detach=True,
-            network_mode="bridge"
-        )
+        Test1and1Common.setUpClass()
         Test1and1ApacheImage.copy_test_files("testpack/files", "html", "/var/www")
-
-        details = docker.APIClient().inspect_container(container=Test1and1ApacheImage.container.id)
+        details = docker.APIClient().inspect_container(container=Test1and1Common.container.id)
         Test1and1ApacheImage.container_ip = details['NetworkSettings']['IPAddress']
 
     @classmethod
@@ -42,36 +31,12 @@ class Test1and1ApacheImage(unittest.TestCase):
             tf.add(relative_source)
         # Copy the archive to the correct destination
         docker.APIClient().put_archive(
-            container=Test1and1ApacheImage.container.id,
+            container=Test1and1Common.container.id,
             path=dest,
             data=pw_tarstream.getvalue()
         )
         # Change back to original folder
         os.chdir(pwd)
-
-    @classmethod
-    def tearDownClass(cls):
-        Test1and1ApacheImage.container.stop()
-
-    def setUp(self):
-        print ("\nIn method", self._testMethodName)
-        self.container = Test1and1ApacheImage.container
-
-    def execRun(self, command):
-        result = self.container.exec_run(command)
-        if isinstance(result, tuple):
-            exit_code = result[0]
-            output = result[1].decode('utf-8')
-        else:
-            output = result.decode('utf-8')
-        return output
-
-    def assertPackageIsInstalled(self, packageName):
-        op = self.execRun("dpkg -l %s" % packageName)
-        self.assertTrue(
-            op.find(packageName) > -1,
-            msg="%s package not installed" % packageName
-        )
 
     # <tests to run>
 
