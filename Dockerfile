@@ -13,7 +13,8 @@ COPY files /
 COPY --from=configurability_apache2 /go/src/github.com/1and1internet/configurability/bin/plugins/apache2.so /opt/configurability/goplugins
 ENV SSL_KEY=/ssl/ssl.key \
     SSL_CERT=/ssl/ssl.crt \
-    DOCUMENT_ROOT=html
+    DOCUMENT_ROOT=html \
+    MAXCONNECTIONSPERCHILD=500
 RUN \
   apt-get update && \
   apt-get install -o Dpkg::Options::=--force-confdef -y apache2 cronolog build-essential git apache2-dev && \
@@ -32,8 +33,11 @@ RUN \
                 /var/www && \
   chmod 666 /etc/apache2/ports.conf /etc/DOCUMENT_ROOT && \
   echo "SSLProtocol ALL -SSLv2 -SSLv3" >> /etc/apache2/apache2.conf && \
+  echo 'MaxConnectionsPerChild ${MAXCONNECTIONSPERCHILD}' >> /etc/apache2/apache2.conf && \
+  sed -i 's/MaxConnectionsPerChild *0/MaxConnectionsPerChild   ${MAXCONNECTIONSPERCHILD}/' /etc/apache2/mods-available/* && \
   sed -i -e 's/Listen 80/Listen 8080/g' /etc/apache2/ports.conf && \
   sed -i -e 's/Listen 443/#Listen 8443/g' /etc/apache2/ports.conf && \
+  echo "Listen 8081" >> /etc/apache2/ports.conf && \
   a2enmod deflate rewrite ssl headers macro rpaf cgi expires && \
   a2disconf other-vhosts-access-log && \
   a2enconf vhosts-logging && \
