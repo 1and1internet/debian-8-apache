@@ -1,16 +1,18 @@
-FROM golang as configurability_apache2
+FROM golang as configurability
 MAINTAINER brian.wilkinson@1and1.co.uk
 WORKDIR /go/src/github.com/1and1internet/configurability
 RUN git clone https://github.com/1and1internet/configurability.git . \
-	&& make apache2\
-	&& echo "configurability apache2 plugin successfully built"
+	&& make main apache2 \
+	&& echo "configurability successfully built"
+
 
 FROM 1and1internet/debian-8:latest
 MAINTAINER brian.wilkinson@1and1.co.uk
 ARG DEBIAN_FRONTEND=noninteractive
 ARG RPAF_VERSION=tags/v0.8.4
 COPY files /
-COPY --from=configurability_apache2 /go/src/github.com/1and1internet/configurability/bin/plugins/apache2.so /opt/configurability/goplugins
+COPY --from=configurability /go/src/github.com/1and1internet/configurability/bin/configurator /usr/bin/configurator
+COPY --from=configurability /go/src/github.com/1and1internet/configurability/bin/plugins/* /opt/configurability/goplugins/
 ENV SSL_KEY=/ssl/ssl.key \
     SSL_CERT=/ssl/ssl.crt \
     DOCUMENT_ROOT=html \
