@@ -1,37 +1,24 @@
 PWD = $(shell pwd)
 IMAGE_NAME = $(shell basename ${PWD})
-BASE_IMAGES = $(shell grep Dockerfile -e FROM | cut -d ' ' -f 2)
 KUBE_CONFIG = ${HOME}/.kube
-BUILD_ARGS = --rm
 TPACK_IMAGE = 1and1internet/testpack-framework
 ROUTE_URL = -paas-library-develop.qacaas.bs.kae.de.iplatform.1and1.org
 GIT_ACCOUNT = 1and1internet
 
-all: pull build test
+all: pull test
 
 pull:
-	##
-	## Pulling image updates from registry
-	##
-	for IMAGE in ${BASE_IMAGES} ${TPACK_IMAGE}; \
-		do docker pull $${IMAGE}; \
-	done
-
-build:
-	##
-	## Starting build of image ${IMAGE_NAME}
-	##
-	docker build ${BUILD_ARGS} --tag ${IMAGE_NAME} .
+	docker pull ${TPACK_IMAGE}
 
 test:
+	# Tests are mounted from this folder, but image being tested would be whatever kubernetes pulls
+	docker run --rm -i -v ${KUBE_CONFIG}:/root/.kube -v ${PWD}:/mnt -e IMAGE_NAME=${GIT_ACCOUNT}/${IMAGE_NAME} -e TEST_PLATFORM=kubernetes -e ROUTE_URL="${ROUTE_URL}" ${TPACK_IMAGE}
+
+test_remote:
+	# Tests need to be checked-in to git
 	docker run --rm -i -v ${KUBE_CONFIG}:/root/.kube -e IMAGE_NAME=${GIT_ACCOUNT}/${IMAGE_NAME} -e TEST_PLATFORM=kubernetes -e ROUTE_URL="${ROUTE_URL}" ${TPACK_IMAGE}
 
 clean:
-	##
-	## Removing docker images .. most errors during this stage are ok, ignore them
-	##
-	for IMAGE in ${BASE_IMAGE} ${TPACK_IMAGE}; \
-		do docker rmi $${IMAGE}; \
-	done
+	docker rmi ${TPACK_IMAGE}
 
-.PHONY: all pull build test clean
+.PHONY: all pull test
