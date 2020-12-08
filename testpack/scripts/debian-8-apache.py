@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import unittest
-from selenium import webdriver
 from testpack_helper_library.unittests.dockertests import Test1and1Common
 
 
@@ -88,24 +87,10 @@ class Test1and1ApacheImage(Test1and1Common):
             )
 
     def test_apache2_get(self):
-        driver = webdriver.PhantomJS()
+        driver = self.getChromeDriver()
         driver.get("%s/test.html" % Test1and1Common.endpoint)
         self.assertEqual('Success', driver.title)
         #self.screenshot("open")
-
-    '''def test_apache2_cgi_headers(self):
-        # We need to set the desired headers, then get a new driver for this to work
-        webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-For'] = "1.2.3.4"
-        webdriver.DesiredCapabilities.PHANTOMJS['phantomjs.page.customHeaders.X-Forwarded-Port'] = "99"
-        driver = webdriver.PhantomJS()
-        driver.get("%s/cgi-bin/rpaf.sh" % Test1and1Common.endpoint)
-        self.assertTrue(driver.page_source.find("1.2.3.4") > -1, msg="Missing X-Forwarded-For")
-        self.assertTrue(driver.page_source.find("99") > -1, msg="Missing X-Forwarded-Port")
-        self.assertEqual(
-            self.exec('bash -c "grep 1.2.3.4 /var/log/apache2/*access_log | grep -iq phantomjs && echo -n true"'),
-            "true",
-            msg="Missing 1.2.3.4 from logs"
-        )'''
 
         # </tests to run>
 
